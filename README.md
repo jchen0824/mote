@@ -51,6 +51,10 @@ Sandbox closure runs SDK memory consolidation and persists its snapshot. Keep th
 saved state and snapshots on the same host, or configure shared storage/provider
 support before moving workers. The sandbox has networking disabled and exposes
 filesystem and shell tools. The host SDK makes model requests and holds the API key.
+`OPENAI_MODEL` is used for the task, memory extraction, and memory consolidation.
+Consolidation allows up to 20 agent turns and adds model calls and latency after
+the task response. The pinned SDK logs memory-generation errors without necessarily
+failing the task, so a completed job alone does not prove memory was saved.
 
 ## Current scope
 
@@ -78,8 +82,9 @@ filtering, worker serialization, process-crash recovery, failed-job retry, SDK
 conversation persistence, and sandbox snapshot restoration into a replacement
 container. These checks use no model calls.
 
-Live acceptance requires a configured API key and Docker. Run an initial task,
-restart the worker, enqueue a task asking it to recall the preference, and inspect
-the actual response and saved memory. This bootstrap has not yet passed that live check.
+Live acceptance passed on November 16, 2026 (Asia/Singapore), using `gpt-6-luna`:
+the SDK generated memory from a synthetic persona, and a fresh worker with a
+separate conversation recalled all facts after restoring the workspace into a
+replacement Docker container. See [live acceptance evidence](docs/live-acceptance.md).
 
 See [design](docs/design.md) for architecture decisions.

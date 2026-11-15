@@ -6,6 +6,7 @@ from agents.extensions.memory import SQLAlchemySession
 from agents.run import RunConfig
 from agents.sandbox import LocalSnapshotSpec, Manifest, SandboxAgent, SandboxRunConfig
 from agents.sandbox.capabilities import Filesystem, Memory, Shell
+from agents.sandbox.config import MemoryGenerateConfig
 from agents.sandbox.sandboxes.docker import (
     DockerSandboxClient,
     DockerSandboxClientOptions,
@@ -63,10 +64,21 @@ class SandboxRunner:
                     "For requests requiring unavailable tools, explain what is pending. "
                     "When retrying interrupted work, inspect existing artifacts first."
                 ),
-                capabilities=[Memory(), Filesystem(), Shell()],
+                capabilities=[
+                    Memory(
+                        generate=MemoryGenerateConfig(
+                            phase_one_model=self.settings.model,
+                            phase_two_model=self.settings.model,
+                            phase_two_max_turns=20,
+                        )
+                    ),
+                    Filesystem(),
+                    Shell(),
+                ],
             )
             conversation = SQLAlchemySession(
-                f"task:{job['id']}",
+                # The SDK also uses this ID as the memory rollout filename.
+                f"task-{job['id']}",
                 engine=self.engine,
                 create_tables=True,
             )
