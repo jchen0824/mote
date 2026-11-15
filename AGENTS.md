@@ -10,9 +10,11 @@ experiments on initiative, memory, and user control. OpenAI Agents SDK is the
 runtime; PostgreSQL owns tasks and conversations; Docker holds the personal
 workspace and learned memory. See [research direction](docs/research.md).
 
-Today this is a single-user CLI with scheduled tasks and tested memory persistence.
-The HUD adapter, simulated-world benchmark, web UI, connectors, and multi-user
-execution are planned. Do not describe them as implemented or enterprise-ready.
+Today this is a single-user CLI with scheduled tasks, tested memory persistence,
+two synthetic episode fixtures, and a local HUD adapter. Hosted HUD execution, a
+web UI, connectors, and multi-user execution are planned. Do not describe this
+prototype as enterprise-ready. Read [evaluation scope](docs/evaluation.md) before
+making claims about benchmark results.
 
 ## Workflow
 
@@ -30,6 +32,7 @@ instruction; implementing a feature does not imply those actions.
 uv sync --locked                # development dependencies and local package
 make check                      # lint, formatting, types, conventions, unit tests, build
 make check-integration          # real PostgreSQL and Docker; TEST_DATABASE_URL required
+make check-hud                  # optional HUD integration; no hosted credentials/model calls
 make format                     # apply Ruff's fixes and formatting
 uv run python scripts/check_commits.py --message 'fix(memory): preserve user preferences'
 ```
@@ -54,6 +57,10 @@ Ordinary CI needs no model key and must not make paid model calls.
   or HUD. The AST convention check enforces direct import boundaries; it is not
   a security mechanism or a complete transitive dependency analysis.
 - `runtime.py`: Agents SDK and Docker integration. `cli.py` wires the components.
+- `evaluation/`: deterministic world, graders, wake-policy driver, reference actor,
+  sandbox adapter, local HUD bridge, and experiment CLI. The convention check also
+  keeps SDK/HUD/runtime imports out of the world, grader, driver, and reference actor.
+  Only public observations reach the model; private fixtures stay on the host.
 - `scripts/`: deterministic developer checks. `.github/workflows/ci.yml` invokes
   the same Make targets. CI runs checks; GitHub branch rules make them merge gates.
 - `tests/`: ordinary tests plus explicitly marked PostgreSQL/Docker integration tests.

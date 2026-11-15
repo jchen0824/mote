@@ -68,7 +68,15 @@ def check(root: Path) -> list[str]:
             target = match[1].split("#")[0]
             if target and not re.match(r"[a-z]+:", target) and not (doc.parent / target).exists():
                 errors.append(f"{doc.relative_to(root)}: fix broken relative link {target}")
-    for name in ("models", "store", "worker"):
+    for name in (
+        "models",
+        "store",
+        "worker",
+        "evaluation/world",
+        "evaluation/grading",
+        "evaluation/episode",
+        "evaluation/reference",
+    ):
         path = f"src/personal_agent/{name}.py"
         errors.extend(import_errors((root / path).read_text(), path))
     tracked = subprocess.check_output(["git", "ls-files", "-z"], cwd=root).decode().split("\0")

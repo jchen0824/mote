@@ -10,6 +10,12 @@ dependencies = [
 
 [project.scripts]
 personal-agent = "personal_agent.cli:main"
+personal-agent-eval = "personal_agent.evaluation.cli:main"
+
+[project.optional-dependencies]
+eval = [
+    "hud==0.6.23",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -40,7 +46,14 @@ warn_unused_ignores = true
 warn_redundant_casts = true
 no_implicit_optional = true
 
+[[tool.mypy.overrides]]
+module = ["hud", "hud.*"]
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--strict-markers --strict-config"
-markers = ["integration: requires disposable PostgreSQL or Docker"]
+markers = [
+    "integration: requires disposable PostgreSQL or Docker",
+    "hud: requires the optional eval dependency; no hosted credentials",
+]

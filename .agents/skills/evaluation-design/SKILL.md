@@ -10,6 +10,11 @@ whole episode: preserve memory across its sessions and reset it between independ
 trials. Keep event generation, virtual time, and private grading state outside the
 agent's control. Future events and reference answers are not observations.
 
+The implemented fixture and commands are in [evaluation.md](../../../docs/evaluation.md).
+The reference actor is a deterministic plumbing test, not a measured model. Current
+graders check structural correctness; do not claim they score prose usefulness.
+Run `make check-hud` when changing the bridge. Hosted execution is not implemented.
+
 Compare policies on the same seeded events, tool access, initial memory, model, and
 budget. Record user-requested versus agent-initiated actions. A policy cannot improve
 its score by sending unlimited notifications, waking forever, or reading the grader.

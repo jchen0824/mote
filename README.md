@@ -69,10 +69,24 @@ create/resume, and SDK learned-memory support. Proactive scheduling is explicit
 through the CLI. Event ingestion, agent-created follow-ups, connectors, notifications,
 permission UI, and multi-user management are future work.
 
+The research CLI includes a meeting-reschedule episode, a no-action episode, three
+wake policies, and a local HUD bridge. Run the deterministic reference actor with
+no API key, or select our sandbox runner for a paid model experiment:
+
+```sh
+uv run personal-agent-eval
+uv run personal-agent-eval --scenario quiet-week
+uv run --extra eval personal-agent-eval --backend hud
+```
+
+See [evaluation setup and scoring](docs/evaluation.md) before interpreting results.
+The reference actor validates the fixture; its scores are not model performance.
+
 ## Verification
 
 ```sh
 make check
+make check-hud
 # Real PostgreSQL and Docker, against a dedicated disposable database:
 TEST_DATABASE_URL=postgresql+asyncpg://USER:PASSWORD@localhost:PORT/test_agents make check-integration
 ```

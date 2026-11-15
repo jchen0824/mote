@@ -1,8 +1,10 @@
 # Research direction: proactive personal agents
 
-Status: proposed evaluation design. The current implementation is a local Agents
-SDK runner with PostgreSQL tasks, conversations, and sandbox memory. This document
-does not claim the benchmark or HUD adapter has been implemented.
+Status: research roadmap with an initial implementation. The repository now includes
+two synthetic episode fixtures, deterministic state graders, three wake policies,
+an adapter to the existing sandbox runner, and a local HUD bridge. See
+[evaluation scope and commands](evaluation.md) for what is verified and what remains
+unimplemented; the broader scenarios below are the research roadmap.
 
 ## Question and first experiment
 
@@ -43,7 +45,9 @@ Start with these scenarios:
 HUD v6 supports custom harnesses, tasksets, repeated runs, multiple runtimes, and
 trace recording. A custom `Agent.__call__(run)` adapter can drive our Agents SDK
 runner, connect environment capabilities, record steps, and publish a final answer.
-Its APIs need an integration test against a pinned version before adding the adapter.
+The initial local bridge is tested against pinned HUD 0.6.23. It records trusted
+driver events and grades the private ledger; remote capability transport remains
+future work.
 
 | Component | Responsibility |
 | --- | --- |
@@ -116,11 +120,12 @@ Hosted traces require an intentional decision about what data is uploaded.
 
 ## Implementation order
 
-1. Agent-ready repository and deterministic gates (this change).
-2. Simulated world, virtual clock, one complete episode, and grader tests.
-3. Agents SDK episode driver and three wake-policy baselines.
-4. A pinned HUD adapter verified locally against the same episode.
-5. Repeated trials, published methodology and results, then optional hosted execution.
+1. Done: agent-ready repository and deterministic gates.
+2. Done: simulated world, virtual clock, two fixtures, and grader tests.
+3. Done: Agents SDK adapter and three wake policies; deterministic reference comparisons.
+4. Done: pinned HUD adapter verified locally against the same episode.
+5. Next: richer scenarios, usage instrumentation, repeated model trials and uncertainty,
+   blinded usefulness review, then optional hosted execution.
 
 ## Sources inspected on November 16, 2026
 

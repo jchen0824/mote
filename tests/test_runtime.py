@@ -1,7 +1,9 @@
 import asyncio
+import json
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
+import pytest
 from agents.run import _sandbox_memory_rollout_id
 from agents.sandbox.capabilities import Memory
 from agents.sandbox.memory.manager import _validate_rollout_id
@@ -9,9 +11,11 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from personal_agent import runtime
 from personal_agent.config import Settings
+from personal_agent.evaluation.sandbox_actor import ActionEnvelope
 
 
-def test_runner_uses_file_safe_memory_id_and_configured_model(tmp_path, monkeypatch):
+@pytest.mark.parametrize("structured", [False, True])
+def test_runner_uses_file_safe_memory_id_and_configured_model(tmp_path, monkeypatch, structured):
     # Exercise our runtime wiring against the pinned SDK's grouping/validation rules.
     sandbox = MagicMock()
     sandbox.__aenter__ = AsyncMock(return_value=sandbox)
@@ -32,7 +36,8 @@ def test_runner_uses_file_safe_memory_id_and_configured_model(tmp_path, monkeypa
         assert memory.generate.phase_one_model == "configured-model"
         assert memory.generate.phase_two_model == "configured-model"
         assert memory.generate.phase_two_max_turns == 20
-        return SimpleNamespace(final_output="Done")
+        assert agent.output_type is (ActionEnvelope if structured else None)
+        return SimpleNamespace(final_output=ActionEnvelope(actions=[]) if structured else "Done")
 
     monkeypatch.setattr(runtime.Runner, "run", run)
 
@@ -41,9 +46,14 @@ def test_runner_uses_file_safe_memory_id_and_configured_model(tmp_path, monkeypa
         engine = create_async_engine(url)
         try:
             runner = runtime.SandboxRunner(
-                Settings(url, tmp_path, "configured-model", "python:3.12-slim"), engine
+                Settings(url, tmp_path, "configured-model", "python:3.12-slim"),
+                engine,
+                output_type=ActionEnvelope if structured else None,
             )
-            assert await runner({"id": "test-job", "prompt": "Remember a preference"}) == "Done"
+            result = await runner({"id": "test-job", "prompt": "Remember a preference"})
+            assert (json.loads(result) if structured else result) == (
+                {"actions": []} if structured else "Done"
+            )
         finally:
             await engine.dispose()
 

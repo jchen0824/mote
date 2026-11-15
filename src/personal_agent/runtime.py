@@ -33,9 +33,12 @@ def save_state(path: Path, state: BaseModel) -> None:
 
 
 class SandboxRunner:
-    def __init__(self, settings: Settings, engine: AsyncEngine):
+    def __init__(
+        self, settings: Settings, engine: AsyncEngine, output_type: type[BaseModel] | None = None
+    ):
         self.settings = settings
         self.engine = engine
+        self.output_type = output_type
 
     async def __call__(self, job: Job) -> str:
         if not os.getenv("OPENAI_API_KEY") or not self.settings.model:
@@ -64,6 +67,7 @@ class SandboxRunner:
             agent = SandboxAgent(
                 name="Personal assistant",
                 model=self.settings.model,
+                output_type=self.output_type,
                 instructions=(
                     "Complete the assigned task and report a concise, verifiable result. "
                     "Use persistent memory for user preferences and lessons. "
@@ -102,6 +106,8 @@ class SandboxRunner:
                         max_turns=20,
                     )
                 # Session close performs memory consolidation and snapshot persistence.
+                if isinstance(result.final_output, BaseModel):
+                    return result.final_output.model_dump_json()
                 return str(result.final_output)
             finally:
                 save_state(state_path, sandbox.state)

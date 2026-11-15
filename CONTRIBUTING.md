@@ -37,7 +37,7 @@ publish a release as part of ordinary feature work.
 
 ## Making CI a merge gate
 
-The repository includes workflows named `quality`, `integration`, and
+The repository includes workflows named `quality`, `integration`, `hud`, and
 `conventional-commits`. After publishing to GitHub and verifying their first runs,
 configure a ruleset for `main` that requires these checks, pull requests, and an
 up-to-date branch; block force pushes and deletion and control bypass permissions.
@@ -51,6 +51,9 @@ the candidate code and are not tamper-proof against someone authorized to edit t
 ## Research contributions
 
 See [research direction](docs/research.md) for the first proposed benchmark and HUD
-integration. Keep scenarios and graders inspectable, synthetic, and reproducible.
+integration, and [evaluation commands](docs/evaluation.md) for implemented fixtures.
+Run `make check-hud` for changes to the bridge or optional dependency. It installs
+the pinned extra and tests the real local HUD runtime without a model or HUD account.
+Keep scenarios and graders inspectable, synthetic, and reproducible.
 Report results across trials, including failures and cost. Do not use private
 personal data in shared fixtures or uploaded traces.
