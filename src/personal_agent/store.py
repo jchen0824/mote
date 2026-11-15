@@ -1,9 +1,12 @@
 from datetime import UTC, datetime
+from typing import cast
 from uuid import uuid4
 
 from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table, Text, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncEngine
+
+from .models import Job
 
 metadata = MetaData()
 jobs = Table(
@@ -53,10 +56,10 @@ async def enqueue(engine: AsyncEngine, prompt: str, due_at: datetime, key: str) 
         return row["id"]
 
 
-async def list_jobs(engine: AsyncEngine) -> list[dict]:
+async def list_jobs(engine: AsyncEngine) -> list[Job]:
     async with engine.connect() as connection:
         rows = await connection.execute(select(jobs).order_by(jobs.c.due_at))
-        return [dict(row) for row in rows.mappings()]
+        return [cast(Job, dict(row)) for row in rows.mappings()]
 
 
 async def retry(engine: AsyncEngine, job_id: str) -> None:

@@ -4,7 +4,12 @@ from pathlib import Path
 from agents import Runner
 from agents.extensions.memory import SQLAlchemySession
 from agents.run import RunConfig
-from agents.sandbox import LocalSnapshotSpec, Manifest, SandboxAgent, SandboxRunConfig
+from agents.sandbox import (
+    LocalSnapshotSpec,
+    Manifest,
+    SandboxAgent,
+    SandboxRunConfig,
+)
 from agents.sandbox.capabilities import Filesystem, Memory, Shell
 from agents.sandbox.config import MemoryGenerateConfig
 from agents.sandbox.sandboxes.docker import (
@@ -13,12 +18,14 @@ from agents.sandbox.sandboxes.docker import (
     DockerSandboxSessionState,
 )
 from docker import from_env
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from .config import Settings
+from .models import Job
 
 
-def save_state(path: Path, state: DockerSandboxSessionState) -> None:
+def save_state(path: Path, state: BaseModel) -> None:
     temporary = path.with_suffix(".tmp")
     temporary.write_text(state.model_dump_json())
     temporary.chmod(0o600)
@@ -30,7 +37,7 @@ class SandboxRunner:
         self.settings = settings
         self.engine = engine
 
-    async def __call__(self, job: dict) -> str:
+    async def __call__(self, job: Job) -> str:
         if not os.getenv("OPENAI_API_KEY") or not self.settings.model:
             raise ValueError("Set OPENAI_API_KEY and OPENAI_MODEL before running agent jobs")
         directory = self.settings.data_dir

@@ -1,15 +1,17 @@
 from collections.abc import Awaitable, Callable
+from typing import cast
 
 from sqlalchemy import func, select, text, update
 from sqlalchemy.ext.asyncio import AsyncEngine
 
+from .models import Job
 from .store import jobs
 
 # One persistent personal workspace. A session-level lock serializes all writers.
 WORKSPACE_LOCK = 734921012
 
 
-async def run_once(engine: AsyncEngine, runner: Callable[[dict], Awaitable[str]]) -> bool:
+async def run_once(engine: AsyncEngine, runner: Callable[[Job], Awaitable[str]]) -> bool:
     async with engine.connect() as connection:
         locked = await connection.scalar(
             text("SELECT pg_try_advisory_lock(:key)"), {"key": WORKSPACE_LOCK}
@@ -37,7 +39,7 @@ async def run_once(engine: AsyncEngine, runner: Callable[[dict], Awaitable[str]]
             if row is None:
                 await connection.commit()
                 return False
-            job = dict(row)
+            job = cast(Job, dict(row))
             await connection.execute(
                 update(jobs)
                 .where(jobs.c.id == job["id"])

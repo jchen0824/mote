@@ -1,7 +1,13 @@
 # Personal Agent
 
-A local-first starter for a proactive personal assistant using OpenAI Agents SDK,
-SandboxAgent, PostgreSQL conversations, and persistent sandbox memory.
+A research prototype for proactive personal agents using OpenAI Agents SDK,
+SandboxAgent, PostgreSQL conversations, and persistent sandbox memory. The research
+focus is when an agent should act, ask, notify, or stay quiet. See the
+[experiment design and HUD integration plan](docs/research.md).
+
+Contributors and coding agents start with [AGENTS.md](AGENTS.md) and
+[CONTRIBUTING.md](CONTRIBUTING.md). Repository skills guide runtime and evaluation
+work; CI runs executable quality and architecture checks.
 
 ## Run locally
 
@@ -66,16 +72,17 @@ permission UI, and multi-user management are future work.
 ## Verification
 
 ```sh
-uv run ruff check .
-uv run pytest
-# Against a dedicated disposable PostgreSQL database:
-TEST_DATABASE_URL=postgresql+asyncpg://USER:PASSWORD@localhost:PORT/test_agents uv run pytest
-# Also exercise SDK snapshot restore in a replacement Docker container:
-RUN_SANDBOX_TESTS=1 TEST_DATABASE_URL=postgresql+asyncpg://USER:PASSWORD@localhost:PORT/test_agents uv run pytest
+make check
+# Real PostgreSQL and Docker, against a dedicated disposable database:
+TEST_DATABASE_URL=postgresql+asyncpg://USER:PASSWORD@localhost:PORT/test_agents make check-integration
 ```
 
 Integration tests create and drop `agent_jobs` and use the SDK session tables in the test database. They exercise
 worker persistence with a deterministic runner and require no API key.
+Both gates reject skipped tests. The quality gate also runs Ruff formatting and
+linting, mypy, repository conventions, and a package build. CI invokes these same
+commands; [GitHub branch rules](CONTRIBUTING.md#making-ci-a-merge-gate) still need
+configuration after the repository is published. No remote enforcement is claimed.
 
 Verified locally with PostgreSQL 17 and Docker: job deduplication, scheduled-time
 filtering, worker serialization, process-crash recovery, failed-job retry, SDK

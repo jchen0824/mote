@@ -37,6 +37,7 @@ def database():
     asyncio.run(reset())
 
 
+@pytest.mark.integration
 def test_deduplication_and_future_schedule(database):
     async def scenario():
         engine = create_async_engine(database)
@@ -58,6 +59,7 @@ def test_deduplication_and_future_schedule(database):
     asyncio.run(scenario())
 
 
+@pytest.mark.integration
 def test_concurrent_workers_and_completed_job(database):
     async def scenario():
         engine = create_async_engine(database)
@@ -90,6 +92,7 @@ def test_concurrent_workers_and_completed_job(database):
     asyncio.run(scenario())
 
 
+@pytest.mark.integration
 def test_failed_job_requires_retry(database):
     async def scenario():
         engine = create_async_engine(database)
@@ -118,6 +121,7 @@ def test_failed_job_requires_retry(database):
     asyncio.run(scenario())
 
 
+@pytest.mark.integration
 def test_process_crash_releases_lock_and_recovers_job(database):
     async def seed():
         engine = create_async_engine(database)
@@ -162,6 +166,7 @@ asyncio.run(run_once(create_async_engine(os.environ['TEST_DATABASE_URL']), crash
     asyncio.run(recover())
 
 
+@pytest.mark.integration
 def test_sdk_conversation_survives_new_engine(database):
     from agents.extensions.memory import SQLAlchemySession
 

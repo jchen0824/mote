@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: '0.11.14'
+          python-version: '3.12'
+      - run: uv sync --locked
+      - run: make check
+      - name: Keep test evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: unit-test-results
+          path: test-results/
+          retention-days: 7
+
+  integration:
+    name: integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: personal_agent
+          POSTGRES_PASSWORD: testonly
+          POSTGRES_DB: personal_agent_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U personal_agent -d personal_agent_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      TEST_DATABASE_URL: postgresql+asyncpg://personal_agent:testonly@localhost:5432/personal_agent_test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: '0.11.14'
+          python-version: '3.12'
+      - run: uv sync --locked
+      - run: docker pull python:3.12-slim
+      - run: make check-integration
+      - name: Keep test evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: integration-test-results
+          path: test-results/
+          retention-days: 7
+
+  conventional-commits:
+    name: conventional-commits
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate PR title and non-merge commit subjects
+        run: python3 scripts/check_commits.py --event "$GITHUB_EVENT_PATH"

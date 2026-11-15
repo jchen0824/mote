@@ -15,6 +15,7 @@ from docker import from_env
 from personal_agent.runtime import save_state
 
 
+@pytest.mark.integration
 @pytest.mark.skipif(
     os.getenv("RUN_SANDBOX_TESTS") != "1",
     reason="Set RUN_SANDBOX_TESTS=1 with Docker running and python:3.12-slim available",
