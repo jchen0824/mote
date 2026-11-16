@@ -124,8 +124,10 @@ Hosted traces require an intentional decision about what data is uploaded.
 2. Done: simulated world, virtual clock, two fixtures, and grader tests.
 3. Done: Agents SDK adapter and three wake policies; deterministic reference comparisons.
 4. Done: pinned HUD adapter verified locally against the same episode.
-5. Next: richer scenarios, usage instrumentation, repeated model trials and uncertainty,
-   blinded usefulness review, then optional hosted execution.
+5. Done: [preference retention/revision experiment](memory-evaluation.md) with
+   identical hidden-answer recall prompts and a fresh-workspace control.
+6. Next: usage instrumentation, repeated model trials and uncertainty, richer
+   proactive scenarios, blinded usefulness review, then optional hosted execution.
 
 ## Sources inspected on November 16, 2026
 

@@ -84,6 +84,10 @@ uv run personal-agent-eval --scenario quiet-week
 uv run --extra eval personal-agent-eval --backend hud
 ```
 
+A separate [memory experiment](docs/memory-evaluation.md) tests preference retention
+and revision across fresh conversations, comparing a persistent workspace with a
+reset workspace. Run its deterministic fixture with `uv run personal-agent-memory-eval`.
+
 See [evaluation setup and scoring](docs/evaluation.md) before interpreting results.
 The reference actor validates the fixture; its scores are not model performance.
 

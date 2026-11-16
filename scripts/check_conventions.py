@@ -77,6 +77,7 @@ def check(root: Path) -> list[str]:
         "evaluation/grading",
         "evaluation/episode",
         "evaluation/reference",
+        "evaluation/memory",
     ):
         path = f"src/personal_agent/{name}.py"
         errors.extend(import_errors((root / path).read_text(), path))

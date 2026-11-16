@@ -11,6 +11,7 @@ dependencies = [
 [project.scripts]
 personal-agent = "personal_agent.cli:main"
 personal-agent-eval = "personal_agent.evaluation.cli:main"
+personal-agent-memory-eval = "personal_agent.evaluation.memory_cli:main"
 
 [project.optional-dependencies]
 eval = [
