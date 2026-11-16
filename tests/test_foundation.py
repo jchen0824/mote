@@ -9,7 +9,7 @@ import pytest
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from personal_agent.cli import timestamp
-from personal_agent.store import enqueue, initialize, list_jobs, metadata, retry
+from personal_agent.store import enqueue, list_jobs, retry
 from personal_agent.worker import run_once
 
 
@@ -17,24 +17,6 @@ def test_schedule_requires_explicit_timezone():
     with pytest.raises(argparse.ArgumentTypeError):
         timestamp("2026-12-01T09:00:00")
     assert timestamp("2026-12-01T09:00:00+08:00").utcoffset() == timedelta(hours=8)
-
-
-@pytest.fixture
-def database():
-    url = os.getenv("TEST_DATABASE_URL")
-    if not url:
-        pytest.skip("Set TEST_DATABASE_URL to a disposable PostgreSQL database")
-
-    async def reset():
-        engine = create_async_engine(url)
-        async with engine.begin() as connection:
-            await connection.run_sync(metadata.drop_all)
-        await initialize(engine)
-        await engine.dispose()
-
-    asyncio.run(reset())
-    yield url
-    asyncio.run(reset())
 
 
 @pytest.mark.integration

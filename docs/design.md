@@ -24,3 +24,17 @@ reconciliation at the connector boundary. Concurrent workers on different hosts 
 share the same persistent workspace/snapshot storage or use a remote sandbox provider.
 
 Permission management and tenant authentication must precede multi-user deployment.
+
+## Event-driven milestone
+
+The [local event-driven path](event-driven.md) adds a trusted control module with
+standing goals, grants, an event inbox, job bindings, and an action/effect ledger.
+Calendar ingestion and scheduling form one transaction. Typed SDK tools in
+`runtime.py` bind job identity on the host and delegate to `control.py`; they do not
+accept caller-selected identities or permission grants. The executor atomically
+checks authorization and records local effects.
+
+The queue, worker, and control layer remain independent of model/provider imports.
+The worker takes a job row lock while claiming work, allowing ingestion to safely
+coalesce queued events without changing a running invocation. This does not change
+the single-worker ownership limitation. All external delivery is still future work.

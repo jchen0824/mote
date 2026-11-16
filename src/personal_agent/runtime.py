@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from agents import Runner
+from agents import Runner, Tool, function_tool
 from agents.extensions.memory import SQLAlchemySession
 from agents.run import RunConfig
 from agents.sandbox import (
@@ -21,6 +21,7 @@ from docker import from_env
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncEngine
 
+from . import control
 from .config import Settings
 from .models import Job
 
@@ -34,11 +35,16 @@ def save_state(path: Path, state: BaseModel) -> None:
 
 class SandboxRunner:
     def __init__(
-        self, settings: Settings, engine: AsyncEngine, output_type: type[BaseModel] | None = None
+        self,
+        settings: Settings,
+        engine: AsyncEngine,
+        output_type: type[BaseModel] | None = None,
+        enable_event_tools: bool = False,
     ):
         self.settings = settings
         self.engine = engine
         self.output_type = output_type
+        self.enable_event_tools = enable_event_tools
 
     async def __call__(self, job: Job) -> str:
         if not os.getenv("OPENAI_API_KEY") or not self.settings.model:
@@ -68,6 +74,9 @@ class SandboxRunner:
                 name="Personal assistant",
                 model=self.settings.model,
                 output_type=self.output_type,
+                tools=(await event_tools(self.engine, job["id"]))
+                if self.enable_event_tools
+                else [],
                 instructions=(
                     "Complete the assigned task and report a concise, verifiable result. "
                     "Use persistent memory for user preferences and lessons. "
@@ -113,3 +122,29 @@ class SandboxRunner:
                 save_state(state_path, sandbox.state)
         finally:
             docker.close()
+
+
+async def event_tools(engine: AsyncEngine, job_id: str) -> list[Tool]:
+    """Bind authority on the host; the model cannot supply identity, time, or grants."""
+    if await control.read_goal(engine, job_id) is None:
+        return []
+
+    @function_tool(failure_error_function=None)
+    async def read_goal() -> dict[str, object]:
+        """Read authoritative goal, meeting revision, permissions, and completed effects."""
+        return await control.read_goal(engine, job_id) or {}
+
+    @function_tool(failure_error_function=None)
+    async def save_brief(text: str) -> dict[str, object]:
+        """Save a local brief. Use each requested heading on its own line. First write wins."""
+        return await control.execute_action(engine, job_id, "save_brief", text)
+
+    @function_tool(failure_error_function=None)
+    async def notify(text: str) -> dict[str, object]:
+        """Add one local notification after saving the brief, subject to permission and quiet hours.
+
+        This creates a database outbox entry; it does not send email or chat messages.
+        """
+        return await control.execute_action(engine, job_id, "notify", text)
+
+    return [read_goal, save_brief, notify]

@@ -72,6 +72,7 @@ def check(root: Path) -> list[str]:
         "models",
         "store",
         "worker",
+        "control",
         "evaluation/world",
         "evaluation/grading",
         "evaluation/episode",

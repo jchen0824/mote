@@ -11,8 +11,9 @@ runtime; PostgreSQL owns tasks and conversations; Docker holds the personal
 workspace and learned memory. See [research direction](docs/research.md).
 
 Today this is a single-user CLI with scheduled tasks, tested memory persistence,
-two synthetic episode fixtures, and a local HUD adapter. Hosted HUD execution, a
-web UI, connectors, and multi-user execution are planned. Do not describe this
+standing goals and local calendar-event ingestion, typed tools with a trusted
+executor, two synthetic episode fixtures, and a local HUD adapter. Hosted HUD
+execution, a web UI, connectors, and multi-user execution are planned. Do not describe this
 prototype as enterprise-ready. Read [evaluation scope](docs/evaluation.md) before
 making claims about benchmark results.
 
@@ -56,7 +57,11 @@ Ordinary CI needs no model key and must not make paid model calls.
   These modules and `models.py` cannot import the CLI, runtime, model SDKs, Docker,
   or HUD. The AST convention check enforces direct import boundaries; it is not
   a security mechanism or a complete transitive dependency analysis.
-- `runtime.py`: Agents SDK and Docker integration. `cli.py` wires the components.
+- `control.py`: trusted event ingestion, grants, job bindings, and atomic local
+  effects/audit. It also cannot import the SDK, runtime, Docker, HUD, or CLI.
+  Tool identities and clocks are host-bound; event text and memory cannot grant
+  permissions. Local notification records are not external delivery.
+- `runtime.py`: Agents SDK, typed event tools, and Docker integration. `cli.py` wires the components.
 - `evaluation/`: deterministic world, graders, wake-policy driver, reference actor,
   sandbox adapter, local HUD bridge, and experiment CLI. The convention check also
   keeps SDK/HUD/runtime imports out of the world, grader, driver, and reference actor.

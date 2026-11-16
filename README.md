@@ -65,9 +65,14 @@ failing the task, so a completed job alone does not prove memory was saved.
 ## Current scope
 
 Includes a CLI, scheduled task queue, PostgreSQL SDK sessions, Docker sandbox
-create/resume, and SDK learned-memory support. Proactive scheduling is explicit
-through the CLI. Event ingestion, agent-created follow-ups, connectors, notifications,
-permission UI, and multi-user management are future work.
+create/resume, SDK learned memory, and an event-driven path for standing meeting
+goals. Local calendar events create or coalesce jobs; typed Python tools save
+briefs and local notification records through a trusted, audited executor.
+See the [event-driven walkthrough](docs/event-driven.md). Run `personal-agent init`
+after upgrading to create its additional tables.
+
+Remote event ingestion, real connector delivery, agent-created follow-ups, a
+permission UI, and multi-user management remain future work.
 
 The research CLI includes a meeting-reschedule episode, a no-action episode, three
 wake policies, and a local HUD bridge. Run the deterministic reference actor with
