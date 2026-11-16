@@ -1,6 +1,6 @@
-# Personal Agent
+# Mote
 
-A research prototype for proactive personal agents using OpenAI Agents SDK,
+Mote is a research prototype for proactive personal agents using OpenAI Agents SDK,
 SandboxAgent, PostgreSQL conversations, and persistent sandbox memory. The research
 focus is when an agent should act, ask, notify, or stay quiet. See the
 [experiment design and HUD integration plan](docs/research.md).

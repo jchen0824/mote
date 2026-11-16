@@ -1,4 +1,4 @@
-# Working on Personal Agent
+# Working on Mote
 
 This is the shared guide for people and coding agents. `CLAUDE.md` imports it;
 `.claude/skills` links to `.agents/skills`.
