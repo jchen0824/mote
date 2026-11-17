@@ -14,6 +14,8 @@ MEMORY_GRADER_VERSION = "exact-ordered-headings-v1"
 MemoryMode = Literal["persistent", "reset"]
 
 
+# Internal fixture records use frozen dataclasses; they do not validate runtime inputs.
+# Model-produced JSON is validated separately by MemoryAnswer in memory_actor.py.
 @dataclass(frozen=True)
 class MemoryObservation:
     phase: Literal["learn", "recall"]
@@ -59,6 +61,8 @@ class MemoryScenario:
 
 
 def memory_scenario(seed: int = 0) -> MemoryScenario:
+    # A controlled synthetic corpus makes each seed reproducible and exactly gradable.
+    # This is not a whitelist for real user preferences. Corpus changes need a new version.
     vocabulary = (
         "Decisions",
         "Evidence",

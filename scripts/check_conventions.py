@@ -68,6 +68,8 @@ def check(root: Path) -> list[str]:
             target = match[1].split("#")[0]
             if target and not re.match(r"[a-z]+:", target) and not (doc.parent / target).exists():
                 errors.append(f"{doc.relative_to(root)}: fix broken relative link {target}")
+    # AST checks keep these deterministic modules independent of execution providers.
+    # Adding the memory fixture here extends the existing CI rule to the new module.
     for name in (
         "models",
         "store",

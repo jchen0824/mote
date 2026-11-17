@@ -15,6 +15,7 @@ from .memory import MemoryObservation
 MEMORY_PROMPT_VERSION = "weekly-brief-memory-v1"
 
 
+# Pydantic validates model output and supplies its JSON schema; grading checks correctness.
 class MemoryAnswer(BaseModel):
     model_config = ConfigDict(extra="forbid")
     headings: list[str] = Field(max_length=12)

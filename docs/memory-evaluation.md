@@ -5,6 +5,27 @@ user preference across fresh conversations and replace it when the user changes
 that preference. It complements the meeting benchmark, where the visible previous
 brief can reveal the requested headings.
 
+## Why this matters for a personal agent
+
+Mote should act on a standing goal without asking the user to repeat their preferences
+at every wake. For example, a user first asks for a weekly brief with a particular
+set of headings, then changes those headings. A later calendar-triggered task must
+use the latest preference even though it starts a new conversation. Forgetting the
+preference or following the superseded version produces unwanted autonomous work.
+
+The event-driven milestone established when a task can run and which actions it
+may execute. This experiment checks a separate prerequisite: whether information
+learned in earlier conversations is available and current. The existing meeting
+benchmark cannot establish that because the previous brief is visible in its input.
+
+This PR adds a measurement, not a new memory implementation. Its four-conversation
+sequence gives future changes to memory extraction, consolidation, or storage a
+repeatable retention/revision check. The fresh-workspace control helps establish
+whether the answer depends on persisted state rather than the current prompt.
+The next research steps are repeated trials with usage/cost measurement, broader
+preferences, and checking that recalled preferences actually guide tool actions.
+A passing synthetic recall trial alone does not make the assistant dependable.
+
 ## Run it
 
 The deterministic fixture needs no API key or Docker:
@@ -51,6 +72,28 @@ The actor returns a structured `headings` list. An empty list means it cannot re
 an answer. Both teaching conversations request an empty response; the later probes
 measure retention. Reordering, partial answers, stale preferences, and self-reported
 scores cannot satisfy the exact-match grader.
+
+## Fixture and model contracts
+
+The vocabulary in `memory_scenario` is synthetic test data, not a product restriction.
+A fixed corpus and seed give both arms the same ordered preferences and an exact
+expected answer without a second model acting as judge. Six distinct headings form
+two nonoverlapping sets, making an obsolete answer distinguishable from the updated
+one. The corpus is not passed to the actor; each teaching request supplies only
+that stage's selected headings. Recall requests supply neither set. Changing the
+corpus should change the scenario version. Real standing goals accept user-provided
+headings; this fixture does not constrain them.
+
+`MemoryObservation`, `MemoryScenario`, and result records are frozen Python
+**dataclasses**: simple internal containers constructed by trusted harness code.
+Type annotations support static checking, but dataclasses do not validate values
+at runtime. Freezing prevents normal field reassignment; it is not a security boundary.
+
+`MemoryAnswer` is a **Pydantic model** because its input comes from the model. It
+provides the SDK's JSON schema and validates the returned structure: a headings
+list, at most 12 entries, and no extra fields. That validates the response shape;
+only the separate exact-match grader decides whether the recalled preference is
+correct. Using Pydantic for all internal records would not add that evidence.
 
 ## What the comparison isolates
 

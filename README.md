@@ -9,6 +9,9 @@ Contributors and coding agents start with [AGENTS.md](AGENTS.md) and
 [CONTRIBUTING.md](CONTRIBUTING.md). Repository skills guide runtime and evaluation
 work; CI runs executable quality and architecture checks.
 
+Mote currently retains the bootstrap `personal_agent` Python namespace and
+`personal-agent*` commands; see [package naming](CONTRIBUTING.md#project-and-package-names).
+
 ## Run locally
 
 Requirements are Python 3.12+, uv, Docker with its daemon running, and an OpenAI API
