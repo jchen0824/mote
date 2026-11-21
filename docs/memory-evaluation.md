@@ -32,6 +32,9 @@ The deterministic fixture needs no API key or Docker:
 
 ```sh
 uv run personal-agent-memory-eval
+
+# Same driver and grader through HUD, with local traces:
+uv run --extra eval personal-agent-memory-eval --backend hud
 ```
 
 The persistent reference actor should recall both preferences; the reset reference
@@ -44,14 +47,33 @@ evaluation database as in the [episode guide](evaluation.md):
 ```sh
 docker compose exec -T postgres createdb -U personal_agent personal_agent_memory_eval
 EVAL_DATABASE_URL=postgresql+asyncpg://personal_agent:localdev@localhost:55432/personal_agent_memory_eval \
-  uv run personal-agent-memory-eval --actor sandbox --memory both \
+  uv run --extra eval personal-agent-memory-eval --backend hud --actor sandbox --memory both \
   --seed 0 --max-wakes 4 --wake-timeout 180
 ```
 
 `--memory persistent` or `--memory reset` runs one arm. `both` runs eight fresh
 conversations in total, sequentially. Live runs make paid model requests, including
-memory extraction/consolidation. There is no hosted HUD integration for this
-experiment; it is a separate local harness.
+memory extraction/consolidation. Both backends use the same trial driver and grader;
+`--backend local` (the default) runs without HUD. `--backend hud` wraps each arm as a
+HUD task, records each wake, and recomputes reward from the private fixture and
+recorded answers. HUD uploads and analytics are disabled even when credentials are
+present. Traces stay under each arm's `hud/` directory; these are harness events,
+not model-level traces. Hosted execution remains unimplemented.
+
+## CI regression checks
+
+`make check-hud`, already run by the CI `hud` job, executes the actual HUD local
+runtime with deterministic actors. It asserts persistent recall is 2/2 and reset
+recall is 0/2, verifies reported HUD rewards match the grader, and checks budget
+exhaustion, actor failures, rejected score claims, and local trace creation.
+The reset arm's zero reward is the expected control result, not a CI failure.
+The CLI exit status describes completion; the tests explicitly assert scores.
+
+`make check` retains focused unit tests for grading, hidden-answer prompts, fresh
+sessions, and workspace isolation. Neither gate calls a model. They catch broken
+evaluation plumbing; detecting real-agent recall regressions requires live trials
+using `--actor sandbox`. Those share the HUD path but remain separate reports until
+repeated measurements establish variance and useful score thresholds.
 
 ## Four conversations per arm
 
@@ -113,7 +135,8 @@ makes the fixture reproducible, not the model deterministic.
 
 Each invocation creates a UUID directory under `eval-results/`, with one
 `report.json` per arm. Reports contain scenario/grader/prompt versions, source and
-lockfile hashes, model, seed, observations, answers, elapsed time, and limits.
+lockfile hashes, backend, model, seed, observations, answers, elapsed time, and limits.
+HUD runs also record `hud_reward` for comparison with the grader metrics.
 Private expected answers are saved for independent score recomputation. Never mount
 these reports or the fixture into an acting sandbox.
 

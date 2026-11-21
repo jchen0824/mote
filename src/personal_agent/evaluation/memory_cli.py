@@ -35,6 +35,7 @@ MODES: tuple[MemoryMode, ...] = ("persistent", "reset")
 def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser(description="Evaluate preference retention and revision")
     result.add_argument("--actor", choices=("reference", "sandbox"), default="reference")
+    result.add_argument("--backend", choices=("local", "hud"), default="local")
     result.add_argument("--memory", choices=("both", *MODES), default="both")
     result.add_argument("--seed", type=int, default=0)
     result.add_argument("--max-wakes", type=int, default=4)
@@ -133,6 +134,7 @@ async def execute(args: argparse.Namespace) -> int:
             "grader": MEMORY_GRADER_VERSION,
             "actor_prompt": MEMORY_PROMPT_VERSION,
             "actor": args.actor,
+            "backend": args.backend,
             "model": settings.model if settings else None,
             "memory_mode": mode,
             "initial_state": "fresh workspace and unique conversations",
@@ -173,15 +175,28 @@ async def execute(args: argparse.Namespace) -> int:
                 flush=True,
             )
 
-        print(f"Starting {mode} / {args.actor}", flush=True)
+        print(f"Starting {mode} / {args.actor} / {args.backend}", flush=True)
         try:
-            result = await run_memory_trial(
-                definition,
-                actor_for_wake,
-                max_wakes=args.max_wakes,
-                wake_timeout=args.wake_timeout,
-                on_wake=checkpoint,
-            )
+            if args.backend == "hud":
+                from .hud_adapter import run_memory_with_hud
+
+                result, hud_reward = await run_memory_with_hud(
+                    definition,
+                    actor_for_wake,
+                    directory / "hud",
+                    max_wakes=args.max_wakes,
+                    wake_timeout=args.wake_timeout,
+                    on_wake=checkpoint,
+                )
+                report["hud_reward"] = hud_reward
+            else:
+                result = await run_memory_trial(
+                    definition,
+                    actor_for_wake,
+                    max_wakes=args.max_wakes,
+                    wake_timeout=args.wake_timeout,
+                    on_wake=checkpoint,
+                )
             report["status"] = result.status
             report["result"] = asdict(result)
             report.pop("wakes")

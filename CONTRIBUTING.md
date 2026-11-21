@@ -82,7 +82,9 @@ the candidate code and are not tamper-proof against someone authorized to edit t
 See [research direction](docs/research.md) for the first proposed benchmark and HUD
 integration, and [evaluation commands](docs/evaluation.md) for implemented fixtures.
 Run `make check-hud` for changes to the bridge or optional dependency. It installs
-the pinned extra and tests the real local HUD runtime without a model or HUD account.
+the pinned extra and tests meeting episodes and memory comparisons through the real
+local HUD runtime without a model or HUD account. Memory checks assert both the
+persistent success and reset control scores; see [memory evaluation](docs/memory-evaluation.md).
 Keep scenarios and graders inspectable, synthetic, and reproducible.
 Report results across trials, including failures and cost. Do not use private
 personal data in shared fixtures or uploaded traces.
