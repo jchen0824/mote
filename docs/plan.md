@@ -16,3 +16,12 @@ The conversation establishes the chosen design in `design.md`.
 - [x] Record briefs, local notifications, and all execution attempts.
 - [x] Verify permissions, quiet hours, stale work, and process-crash deduplication.
 - [x] Add an operator CLI walkthrough and document external-delivery limitations.
+
+## Isolated preference-memory evaluation
+
+- [x] Teach, recall, revise, and recall again across independent conversations.
+- [x] Keep expected answers and previous briefs out of probe observations.
+- [x] Compare persistent workspaces with a fresh-workspace control.
+- [x] Grade exact retention and revision separately; preserve failures and budgets.
+- [x] Record private reports and memory artifact hashes without trace uploads.
+- [x] Record a bounded real-model comparison and its limitations.

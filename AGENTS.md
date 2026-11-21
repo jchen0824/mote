@@ -12,7 +12,7 @@ workspace and learned memory. See [research direction](docs/research.md).
 
 Today this is a single-user CLI with scheduled tasks, tested memory persistence,
 standing goals and local calendar-event ingestion, typed tools with a trusted
-executor, two synthetic episode fixtures, and a local HUD adapter. Hosted HUD
+executor, synthetic episode fixtures, a preference-memory experiment, and a local HUD adapter. Hosted HUD
 execution, a web UI, connectors, and multi-user execution are planned. Do not describe this
 prototype as enterprise-ready. Read [evaluation scope](docs/evaluation.md) before
 making claims about benchmark results.
@@ -66,6 +66,8 @@ Ordinary CI needs no model key and must not make paid model calls.
   sandbox adapter, local HUD bridge, and experiment CLI. The convention check also
   keeps SDK/HUD/runtime imports out of the world, grader, driver, and reference actor.
   Only public observations reach the model; private fixtures stay on the host.
+  The memory experiment probes retention and revision without prior answers in
+  observations; its reset arm removes all workspace state, not just SDK memory.
 - `scripts/`: deterministic developer checks. `.github/workflows/ci.yml` invokes
   the same Make targets. CI runs checks; GitHub branch rules make them merge gates.
 - `tests/`: ordinary tests plus explicitly marked PostgreSQL/Docker integration tests.
