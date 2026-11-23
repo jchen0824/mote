@@ -1,0 +1,53 @@
+name: Live memory comparison
+on:
+  workflow_dispatch:
+    inputs:
+      candidate:
+        description: Full reviewed PR head commit SHA (will execute with model credentials)
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  compare:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: testonly
+          POSTGRES_DB: memory_eval
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2
+        with:
+          version: '0.11.14'
+          python-version: '3.12'
+      - name: Compare reviewed PR and main
+        env:
+          CANDIDATE: ${{ inputs.candidate }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+          DATABASE_URL: postgresql+asyncpg://postgres:testonly@localhost:5432/postgres
+          EVAL_DATABASE_URL: postgresql+asyncpg://postgres:testonly@localhost:5432/memory_eval
+        run: |
+          set -eu
+          [[ "$CANDIDATE" =~ ^[a-f0-9]{40}$ ]]
+          : "${OPENAI_API_KEY:?Set OPENAI_API_KEY}" "${OPENAI_MODEL:?Set OPENAI_MODEL}"
+          git fetch origin "$CANDIDATE"
+          docker pull python:3.12-slim
+          bash scripts/compare_memory.sh "$GITHUB_SHA" "$CANDIDATE"
+      - name: Publish comparison table
+        if: always()
+        run: |
+          for report in eval-results/comparison-*/summary.md; do
+            if test -f "$report"; then cat "$report" >> "$GITHUB_STEP_SUMMARY"; fi
+          done

@@ -183,3 +183,33 @@ The source hash was
 reports and snapshots remain under
 `eval-results/memory-live-20261117/8d55e7c2-a302-42b4-a2a3-ad69e29cbd28/`.
 This is an acceptance comparison, not a statistical estimate of memory reliability.
+
+## Compare main and a reviewed PR
+
+The manual **Live memory comparison** Actions workflow runs from `main` once the
+workflow is merged. Configure the repository secret `OPENAI_API_KEY` and variable
+`OPENAI_MODEL`, then dispatch with the full commit SHA of a PR you have reviewed.
+That code executes with model credentials. Ordinary PR CI uses the reference actor.
+
+For local use, fetch both commits, export the model credentials and database
+settings described above into the shell, start Docker, then run:
+
+```sh
+git fetch origin main
+bash scripts/compare_memory.sh origin/main HEAD
+```
+
+The script uses detached checkouts, each revision's runtime and locked
+dependencies, and the same evaluation package from the candidate on both sides.
+This also works when the baseline predates the memory CLI. Seeds 0, 1 and 2
+each run both persistent and reset modes on both commits (12 trials, 48 fresh
+conversations, plus consolidation). Each trial starts with a fresh workspace.
+The default per-wake timeout is 180 seconds. Live calls incur model charges.
+Set `MEMORY_COMPARE_ACTOR=reference` for a credential-free orchestration check.
+
+The Actions summary shows paired retention, revision and stale recall for every
+seed and mode. Treat lost recall as a signal to replicate: a single paired
+observation per seed cannot establish a change in reliability. Score differences
+are advisory. Failed, missing or mismatched trials fail the check. Local reports
+and traces stay in `eval-results/comparison-*/`; CI publishes only the comparison
+table, including the commit IDs.
