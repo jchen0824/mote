@@ -124,7 +124,9 @@ local Environment and harness per trial and currently runs trials sequentially.
 Hosted HUD execution, capability transport, parallel trials, restart injection,
 full model-usage instrumentation, and repeated statistical comparisons remain future
 work. Current briefs are observable, so this episode is not an isolated test of
-memory recall; use the earlier fresh-session memory acceptance for that claim.
+memory recall. The separate [preference memory experiment](memory-evaluation.md)
+removes the prior brief and answer from recall inputs and compares persistent
+workspace state against a fresh-workspace control.
 
 ## First live acceptance — November 16, 2026 (Asia/Singapore)
 
